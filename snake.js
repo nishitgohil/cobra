@@ -19,6 +19,78 @@ let snake = [
 ];
 let direction = "right";
 
+// Define obstacle variants
+const obstacleVariants = [
+  { x: 8, y: 5, color: "gray", size: 20 },
+  { x: 8, y: 6, color: "blue", size: 15 },
+  { x: 8, y: 7, color: "purple", size: 25 },
+  // Add more obstacle variants here
+];
+
+// Initialize the obstacles
+let obstacles = obstacleVariants.map(variant => ({ ...variant }));
+
+// Function to draw the obstacles
+function drawObstacles() {
+  obstacles.forEach(obstacle => {
+    ctx.fillStyle = obstacle.color;
+
+    // Draw a circle obstacle
+    ctx.beginPath();
+    ctx.arc(
+      obstacle.x * cellSize + cellSize / 2,
+      obstacle.y * cellSize + cellSize / 2,
+      obstacle.size / 2,
+      0,
+      2 * Math.PI
+    );
+    ctx.fill();
+
+  
+  });
+}
+
+// Function to check if the snake has collided with an obstacle
+// function isCollision(head) {
+//   for (let i = 1; i < snake.length; i++) {
+//     if (snake[i].x === head.x && snake[i].y === head.y) {
+//       return true;
+//     }
+//   }
+  
+//   for (let i = 0; i < obstacles.length; i++) {
+//     if (obstacles[i].x === head.x && obstacles[i].y === head.y) {
+//       return true;
+//     }
+//   }
+  
+  
+//   return false;
+// }
+
+// Function to check if the snake's head collides with an obstacle
+function isCollisionWithObstacle() {
+  const head = snake[0];
+
+  for (let i = 0; i < obstacles.length; i++) {
+    if (obstacles[i].x === head.x && obstacles[i].y === head.y) {
+      return true;
+    }
+  }
+  for (let i = 1; i < snake.length; i++) {
+    if (snake[i].x === head.x && snake[i].y === head.y) {
+      return true;
+    }
+  }
+  
+  for (let i = 0; i < obstacles.length; i++) {
+    if (obstacles[i].x === head.x && obstacles[i].y === head.y) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Initialize the food's position
 let food = { x: 10, y: 10 };
 
@@ -89,6 +161,7 @@ function update() {
   // Draw the snake and food
   drawSnake();
   drawFood();
+  drawObstacles();
 }
 
 // Function to check if the snake has collided with itself
@@ -101,10 +174,48 @@ function isCollision(head) {
   return false;
 }
 
+// Add event listener to handle touch events
+document.addEventListener("touchstart", handleTouchStart);
+document.addEventListener("touchmove", handleTouchMove);
+document.addEventListener("keydown", handleKeyDown);
+
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+
+// Function to handle touch start event
+function handleTouchStart(event) {
+  touchStartX = event.touches[0].clientX;
+  touchStartY = event.touches[0].clientY;
+}
+
+// Function to handle touch move event
+function handleTouchMove(event) {
+  touchEndX = event.touches[0].clientX;
+  touchEndY = event.touches[0].clientY;
+  
+  const dx = touchEndX - touchStartX;
+  const dy = touchEndY - touchStartY;
+  
+  // Check the larger component to determine the predominant direction
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 0 && direction !== "left") {
+      direction = "right";
+    } else if (dx < 0 && direction !== "right") {
+      direction = "left";
+    }
+  } else {
+    if (dy > 0 && direction !== "up") {
+      direction = "down";
+    } else if (dy < 0 && direction !== "down") {
+      direction = "up";
+    }
+  }
+}
+
 // Function to handle keydown events
 function handleKeyDown(event) {
-  
-
   switch (event.key) {
     case "ArrowUp":
       if (direction !== "down") {
@@ -128,5 +239,4 @@ function handleKeyDown(event) {
       break;
   }
 }
-document.addEventListener("keydown", handleKeyDown);
 // Start
